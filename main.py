@@ -27,14 +27,14 @@ class Network(nn.Module):
         self.fc2=nn.Linear(256, action_size)
 
     def forward(self, state):
-       x=F.relu(self.bn1( self.conv1(state)))
-       x=F.relu(self.bn2( self.conv2(x)))
-       x=F.relu(self.bn3( self.conv3(x)))
-       x=F.relu(self.bn4( self.conv4(x)))
-       x=x.view(x.size(0), -1)
-       x=F.relu(self.fc1(x))
-       x=F.relu(self.fc2(x))
-       return x
+        x = F.relu(self.bn1(self.conv1(state)))
+        x = F.relu(self.bn2(self.conv2(x)))
+        x = F.relu(self.bn3(self.conv3(x)))
+        x = F.relu(self.bn4(self.conv4(x)))
+        x = x.view(x.size(0), -1)
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        return self.fc3(x)
 
 import gymnasium as gym
 import ale_py
