@@ -36,3 +36,14 @@ class Network(nn.Module):
        x=F.relu(self.fc2(x))
        return x
 
+import gymnasium as gym
+import ale_py
+
+gym.register_envs(ale_py)
+env=gym.make("MsPacmanDeterministic-v0", full_action_space=False)
+
+state_shape=env.observation_space.shape
+number_actions=env.action_space.n
+
+print(state_shape)
+print(number_actions)
