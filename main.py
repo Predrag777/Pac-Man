@@ -62,3 +62,43 @@ def preprocess_frame(frame):
     return preprocess(frame).unsqueeze(0)
 
 
+class Agent():
+
+  def __init__(self, action_size):
+    self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    self.action_size = action_size
+    self.local_qnetwork = Network(action_size).to(self.device)
+    self.target_qnetwork = Network(action_size).to(self.device)
+    self.optimizer = optim.Adam(self.local_qnetwork.parameters(), lr = learning_rate)
+    self.memory = deque(maxlen=10000)
+
+  def step(self, state, action, reward, next_state, done):
+    state=preprocess_frame(state)
+    next_state=preprocess_frame(next_state)
+    self.memory.append((state,action,reward,next_state,done))
+    if len(self.memory) > minibatch_size:
+        experiences = random.sample(self.memory, k=minibatch_size)
+        self.learn(experiences, discount_factor)
+
+  def act(self, state, epsilon = 0.):
+    state = preprocess_frame(state).to(self.device)
+    self.local_qnetwork.eval()
+    with torch.no_grad():
+      action_values = self.local_qnetwork(state)
+    self.local_qnetwork.train()
+    if random.random() > epsilon:
+      return np.argmax(action_values.cpu().data.numpy())
+    else:
+      return random.choice(np.arange(self.action_size))
+
+  def learn(self, experiences, discount_factor):
+    states, next_states, actions, rewards, dones = zip(*experiences)
+    
+
+    next_q_targets = self.target_qnetwork(next_states).detach().max(1)[0].unsqueeze(1)
+    q_targets = rewards + discount_factor * next_q_targets * (1 - dones)
+    q_expected = self.local_qnetwork(states).gather(1, actions)
+    loss = F.mse_loss(q_expected, q_targets)
+    self.optimizer.zero_grad()
+    loss.backward()
+    self.optimizer.step()
