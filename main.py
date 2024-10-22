@@ -47,3 +47,18 @@ number_actions=env.action_space.n
 
 print(state_shape)
 print(number_actions)
+
+
+learning_rate = 5e-4
+minibatch_size = 64
+discount_factor = 0.99
+
+from PIL import Image
+from torchvision import transforms
+
+def preprocess_frame(frame):
+    frame=Image.fromarray(frame)
+    preprocess=transforms.Compose([transforms.Resize((128,128)), transforms.ToTensor()])
+    return preprocess(frame).unsqueeze(0)
+
+
